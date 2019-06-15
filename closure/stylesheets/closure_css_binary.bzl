@@ -44,6 +44,7 @@ def _closure_css_binary(ctx):
     ]
     if ctx.attr.renaming:
         outputs += [ctx.outputs.js]
+        files += [ctx.outputs.js]
         args += [
             "--output-renaming-map",
             ctx.outputs.js.path,
