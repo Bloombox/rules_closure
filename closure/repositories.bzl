@@ -771,6 +771,7 @@ def com_google_template_soy():
                 "SoyParseInfoGenerator",
                 "SoyToJbcSrcCompiler",
                 "SoyToJsSrcCompiler",
+                "SoyToIncrementalDomSrcCompiler",
                 "SoyToPySrcCompiler",
             )
         ]),
