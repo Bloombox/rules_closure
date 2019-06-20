@@ -15,36 +15,3 @@
 licenses(["notice"])  # Apache License Version 2.0
 
 load("//closure:defs.bzl", "closure_js_library")
-
-closure_js_library(
-    name = "incremental_dom",
-    srcs = ["incremental-dom-closure.js"],
-    suppress = [
-        "analyzerChecks",
-        "checkTypes",
-        "reportUnknownTypes",
-        "strictCheckTypes",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-genrule(
-    name = "extract",
-    srcs = ["@com_google_javascript_incremental_dom//file"],
-    outs = ["incremental-dom-closure.js"],
-    cmd = " && ".join([
-        "IN=$$(pwd)/$(SRCS)",
-        "OUT=$$(pwd)/$@",
-        "TMP=$$(mktemp -d $${TMPDIR:-/tmp}/genrule.XXXXXXXXXX)",
-        "SCRIPT=$$(pwd)/$(location :build)",
-        "cd $$TMP",
-        "$$SCRIPT $$IN $$OUT",
-        "rm -rf $$TMP",
-    ]),
-    tools = [":build"],
-)
-
-sh_binary(
-    name = "build",
-    srcs = ["build.sh"],
-)
