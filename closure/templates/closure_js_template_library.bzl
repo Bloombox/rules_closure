@@ -46,7 +46,6 @@ def _impl(ctx):
         #    fail('soy_msgs_are_external must be 0 when using incremental_dom')
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
-        deps += ["//closure/templates:soy_jssrc_idom"]
 
     if ctx.attr.plugin_modules:
         args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
@@ -161,7 +160,7 @@ def closure_js_template_library(
     if incremental_dom:
         deps = deps + [
             str(Label("//closure/templates:soy_jssrc_idom")),
-            #str(Label("//third_party/javascript/incremental_dom")),
+            str(Label("@com_google_javascript_incremental_dom//:idom-js")),
         ]
 
     base_suppressions = []
