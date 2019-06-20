@@ -25,7 +25,7 @@ _SOYTOINCREMENTALDOMSRCCOMPILER = "@com_google_template_soy//:SoyToIncrementalDo
 
 def _impl(ctx):
     if not ctx.attr.incremental_dom:
-        args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}.idom.js" %
+        args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}.js" %
                 ctx.configuration.genfiles_dir.path]
         if ctx.attr.soy_msgs_are_external:
             args += ["--googMsgsAreExternal"]
