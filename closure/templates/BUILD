@@ -79,4 +79,5 @@ java_library(
 filegroup(
     name = "idom",
     srcs = ["soyutils_idom.js"],
+    deps = ["@com_google_javascript_incremental_dom//:idom-js"]
 )
