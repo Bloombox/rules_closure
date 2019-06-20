@@ -159,7 +159,7 @@ def closure_js_template_library(
     if incremental_dom:
         deps = deps + [
             str(Label("//closure/templates:soy_jssrc_idom")),
-            str(Label("//third_party/javascript/incremental_dom")),
+            #str(Label("//third_party/javascript/incremental_dom")),
         ]
 
     closure_js_library(
