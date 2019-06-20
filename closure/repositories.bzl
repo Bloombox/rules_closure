@@ -697,7 +697,7 @@ def com_google_javascript_incremental_dom():
         name = "com_google_javascript_incremental_dom",
         url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
         strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
-        sha256 = "4a6964e22377e2f34fada0261fd40463ca0fd8facca0beb4c608eed10864ee88",
+        sha256 = "82c041a1a81368b6cac5ebab3cde4da212364674b2d74d4cb0931f7068f7636e",
     )
 
 def com_google_javascript_closure_library():
