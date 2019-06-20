@@ -68,7 +68,6 @@ closure_js_library(
         ":soy_jssrc",
         "//closure/library/soy",
         "//closure/library/soy:data",
-        "//third_party/incremental_dom",
     ],
 )
 
