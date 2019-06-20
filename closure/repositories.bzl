@@ -698,6 +698,7 @@ def com_google_javascript_incremental_dom():
         url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
         strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
         sha256 = "82c041a1a81368b6cac5ebab3cde4da212364674b2d74d4cb0931f7068f7636e",
+        build_file = str(Label("//closure/templates:idom.bzl")),
     )
 
 def com_google_javascript_closure_library():
