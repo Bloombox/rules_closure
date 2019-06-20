@@ -35,6 +35,7 @@ def _impl(ctx):
             args += ["--bidiGlobalDir=%s" % ctx.attr.bidi_global_dir]
         if ctx.attr.plugin_modules:
             args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
+        args += ["--shouldProvideRequireSoyNamespaces"]
     else:
         #if not ctx.attr.should_provide_require_soy_namespaces:
         #    fail('should_provide_require_soy_namespaces must be 1 ' +
@@ -45,8 +46,6 @@ def _impl(ctx):
         #    fail('soy_msgs_are_external must be 0 when using incremental_dom')
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
-
-    args += ["--shouldProvideRequireSoyNamespaces"]
 
     if ctx.attr.plugin_modules:
         args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
