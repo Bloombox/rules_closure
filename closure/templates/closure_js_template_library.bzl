@@ -36,13 +36,13 @@ def _impl(ctx):
         if ctx.attr.plugin_modules:
             args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
     else:
-        if not ctx.attr.should_provide_require_soy_namespaces:
-            fail('should_provide_require_soy_namespaces must be 1 ' +
-                 'when using incremental_dom')
-        if ctx.attr.should_generate_soy_msg_defs:
-            fail('should_generate_soy_msg_defs must be 0 when using incremental_dom')
-        if ctx.attr.soy_msgs_are_external:
-            fail('soy_msgs_are_external must be 0 when using incremental_dom')
+        #if not ctx.attr.should_provide_require_soy_namespaces:
+        #    fail('should_provide_require_soy_namespaces must be 1 ' +
+        #         'when using incremental_dom')
+        #if ctx.attr.should_generate_soy_msg_defs:
+        #    fail('should_generate_soy_msg_defs must be 0 when using incremental_dom')
+        #if ctx.attr.soy_msgs_are_external:
+        #    fail('soy_msgs_are_external must be 0 when using incremental_dom')
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
 
