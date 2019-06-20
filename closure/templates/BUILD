@@ -75,3 +75,8 @@ java_library(
     name = "safe_html_types",
     exports = ["@com_google_common_html_types"],
 )
+
+filegroup(
+    name = "idom",
+    srcs = ["soyutils_idom.js"],
+)
