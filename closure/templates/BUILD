@@ -68,6 +68,7 @@ closure_js_library(
         ":soy_jssrc",
         "//closure/library/soy",
         "//closure/library/soy:data",
+        "@com_google_javascript_incremental_dom//:idom-js"
     ],
 )
 
@@ -78,6 +79,5 @@ java_library(
 
 filegroup(
     name = "idom",
-    srcs = ["soyutils_idom.js"],
-    deps = ["@com_google_javascript_incremental_dom//:idom-js"]
+    srcs = ["soyutils_idom.js"]
 )
