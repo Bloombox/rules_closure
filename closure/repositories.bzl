@@ -46,6 +46,7 @@ def closure_repositories(
         omit_com_google_java_format = False,
         omit_com_google_javascript_closure_compiler = False,
         omit_com_google_javascript_closure_library = False,
+        omit_com_google_javascript_incremental_dom = False,
         omit_com_google_jsinterop_annotations = False,
         omit_com_google_protobuf = False,
         omit_com_google_protobuf_java = False,
@@ -128,6 +129,8 @@ def closure_repositories(
         com_google_javascript_closure_compiler()
     if not omit_com_google_javascript_closure_library:
         com_google_javascript_closure_library()
+    if not omit_com_google_javascript_incremental_dom:
+        com_google_javascript_incremental_dom()
     if not omit_com_google_jsinterop_annotations:
         com_google_jsinterop_annotations()
     if not omit_com_google_protobuf:
@@ -683,6 +686,18 @@ def com_google_javascript_closure_compiler():
             ")",
             "",
         ]),
+    )
+
+def com_google_javascript_incremental_dom():
+    # To update Incremental DOM, one needs to update
+    # third_party/javascript/incremental_dom/build.sh to remain compatible with
+    # the upstream "js-closure" gulpfile.js target.
+    # https://github.com/google/incremental-dom/blob/master/gulpfile.js
+    native.http_file(
+        name = "com_google_javascript_incremental_dom",
+        url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
+        strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
+        sha256 = "4a6964e22377e2f34fada0261fd40463ca0fd8facca0beb4c608eed10864ee88",
     )
 
 def com_google_javascript_closure_library():
