@@ -37,13 +37,6 @@ def _impl(ctx):
             args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
         args += ["--shouldProvideRequireSoyNamespaces"]
     else:
-        #if not ctx.attr.should_provide_require_soy_namespaces:
-        #    fail('should_provide_require_soy_namespaces must be 1 ' +
-        #         'when using incremental_dom')
-        #if ctx.attr.should_generate_soy_msg_defs:
-        #    fail('should_generate_soy_msg_defs must be 0 when using incremental_dom')
-        #if ctx.attr.soy_msgs_are_external:
-        #    fail('soy_msgs_are_external must be 0 when using incremental_dom')
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
 
@@ -61,14 +54,18 @@ def _impl(ctx):
     if ctx.file.globals:
         args += ["--compileTimeGlobalsFile", ctx.file.globals.path]
         inputs.append(ctx.file.globals)
+
+    soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
         for f in dep.closure_js_library.descriptors.to_list():
             args += ["--protoFileDescriptors=%s" % f.path]
             inputs.append(f)
 
-        soydeps = []
         for f in dep.closure_js_library.templates.to_list():
             soydeps.append(f.path)
+
+    ## prep dependencies for the template, if we have any
+    if len(soydeps) > 0:
         args += ["--deps=%s" % ",".join(soydeps)]
 
     ctx.actions.run(
