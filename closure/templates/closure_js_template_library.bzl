@@ -63,6 +63,7 @@ def _impl(ctx):
 
         for f in dep.closure_js_library.templates.to_list():
             soydeps.append(f.path)
+            inputs.append(f)
 
     ## prep dependencies for the template, if we have any
     if len(soydeps) > 0:
