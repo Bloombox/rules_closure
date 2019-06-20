@@ -165,6 +165,7 @@ def closure_js_template_library(
 
     base_suppressions = []
     if incremental_dom:
+        base_suppressions.append("superfluousSuppress")
         base_suppressions.append("strictModuleChecks")
 
     closure_js_library(
