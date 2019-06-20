@@ -164,12 +164,16 @@ def closure_js_template_library(
             #str(Label("//third_party/javascript/incremental_dom")),
         ]
 
+    base_suppressions = []
+    if incremental_dom:
+        base_suppressions.append("strictModuleChecks")
+
     closure_js_library(
         name = name,
         srcs = js_srcs,
         deps = deps,
         testonly = testonly,
-        suppress = suppress + [
+        suppress = base_suppressions + suppress + [
             "analyzerChecks",
             "reportUnknownTypes",
             "strictCheckTypes",
