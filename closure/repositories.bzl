@@ -693,7 +693,7 @@ def com_google_javascript_incremental_dom():
     # third_party/javascript/incremental_dom/build.sh to remain compatible with
     # the upstream "js-closure" gulpfile.js target.
     # https://github.com/google/incremental-dom/blob/master/gulpfile.js
-    native.http_file(
+    http_archive(
         name = "com_google_javascript_incremental_dom",
         url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
         strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
