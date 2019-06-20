@@ -19,6 +19,7 @@ load(
     "CLOSURE_JS_TOOLCHAIN_ATTRS",
     "JS_FILE_TYPE",
     "JS_LANGUAGE_IN",
+    "SOY_FILE_TYPE",
     "collect_js",
     "collect_runfiles",
     "convert_path_to_es6_module_name",
@@ -108,6 +109,7 @@ def _closure_js_library_impl(
         includes = (),
         exports = depset(),
         internal_descriptors = depset(),
+        internal_templates = depset(),
         no_closure_library = False,
         internal_expect_failure = False,
 
@@ -308,6 +310,8 @@ def _closure_js_library_impl(
 
     if type(internal_descriptors) == "list":
         internal_descriptors = depset(internal_descriptors)
+    if type(internal_templates) == "list":
+        internal_templates = depset(internal_templates)
 
     # We now export providers to any parent Target. This is considered a public
     # interface because other Skylark rules can be designed to do things with
@@ -368,6 +372,10 @@ def _closure_js_library_impl(
             # the structure of protobufs so they can be easily rendered in .soy
             # files with type safety. See closure_js_template_library.bzl.
             descriptors = depset(transitive = [js.descriptors, internal_descriptors]),
+            # NestedSet<File> of all Soy template sources involved with this JS
+            # library, which are required in some circumstances for downstream Soy
+            # templates, like when using the Incremental DOM backend.
+            templates = depset(transitive = [js.templates, internal_templates]),
             # NestedSet<Label> of all closure_css_library rules in the transitive
             # closure. This is used by closure_js_binary can guarantee the
             # completeness of goog.getCssName() substitutions.
@@ -410,6 +418,7 @@ def _closure_js_library(ctx):
         getattr(ctx.attr, "includes", []),
         ctx.attr.exports,
         ctx.files.internal_descriptors,
+        ctx.files.internal_templates,
         ctx.attr.no_closure_library,
         ctx.attr.internal_expect_failure,
 
@@ -466,6 +475,7 @@ closure_js_library = rule(
 
         # internal only
         "internal_descriptors": attr.label_list(allow_files = True),
+        "internal_templates": attr.label_list(allow_files = SOY_FILE_TYPE),
         "internal_expect_failure": attr.bool(default = False),
     }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
     # TODO(yannic): Deprecate.

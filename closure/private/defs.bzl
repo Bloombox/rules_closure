@@ -85,6 +85,7 @@ def collect_js(
     infos = []
     modules = []
     descriptors = []
+    templates = []
     stylesheets = []
     js_module_roots = []
     has_closure_library = False
@@ -94,6 +95,7 @@ def collect_js(
         infos += [getattr(dep.closure_js_library, "infos", depset())]
         modules += [getattr(dep.closure_js_library, "modules", depset())]
         descriptors += [getattr(dep.closure_js_library, "descriptors", depset())]
+        templates += [getattr(dep.closure_js_library, "templates", depset())]
         stylesheets += [getattr(dep.closure_js_library, "stylesheets", depset())]
         js_module_roots += [getattr(dep.closure_js_library, "js_module_roots", depset())]
         has_closure_library = (
@@ -117,6 +119,7 @@ def collect_js(
         infos = depset(transitive = infos),
         modules = depset(transitive = modules),
         descriptors = depset(transitive = descriptors),
+        templates = depset(transitive = templates),
         stylesheets = depset(transitive = stylesheets),
         has_closure_library = has_closure_library,
     )

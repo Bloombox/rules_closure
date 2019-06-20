@@ -65,6 +65,12 @@ def _impl(ctx):
         for f in dep.closure_js_library.descriptors.to_list():
             args += ["--protoFileDescriptors=%s" % f.path]
             inputs.append(f)
+
+        soydeps = []
+        for f in dep.closure_js_library.templates.to_list():
+            soydeps.append(f.path)
+        args += ["--deps=%s" % ",".join(soydeps)]
+
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outputs,
@@ -179,5 +185,6 @@ def closure_js_template_library(
             "strictCheckTypes",
             "unusedLocalVariables",
         ],
+        internal_templates = srcs,
         **kwargs
     )
