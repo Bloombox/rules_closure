@@ -46,6 +46,8 @@ def _impl(ctx):
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
 
+    args += ["--shouldProvideRequireSoyNamespaces"]
+
     if ctx.attr.plugin_modules:
         args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
 
