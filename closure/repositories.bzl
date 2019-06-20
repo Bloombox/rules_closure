@@ -754,10 +754,9 @@ def com_google_template_soy():
         name = "com_google_template_soy",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11.jar",
-            "https://repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11.jar",
+            "https://storage.googleapis.com/bloom-software/java-soy-b1.jar"
         ],
-        jar_sha256 = "ceb0e78cf1cadefa17493bbd0a913314558e34dd30e4d7d92e406f69c2670725",
+        jar_sha256 = "4f1a165203d81593151b9f8c10ef2da5d286f84b30dca02fab1ea78787b49514",
         deps = [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
