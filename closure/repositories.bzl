@@ -369,9 +369,9 @@ def com_google_closure_stylesheets():
         name = "com_google_closure_stylesheets",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b3.jar"
+            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar"
         ],
-        jar_sha256 = "429595e2a80f1580059006aab141afa47cb7352ec833820552bb25f1d2ef4542",
+        jar_sha256 = "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
         deps = [
             "@args4j",
             "@com_google_javascript_closure_compiler",
