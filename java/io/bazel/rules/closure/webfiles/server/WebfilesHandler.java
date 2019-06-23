@@ -60,6 +60,34 @@ final class WebfilesHandler implements HttpHandler {
       return;
     }
     if (!fileServer.serve(webpath)) {
+      if (webpath.seemsLikeADirectory() || !request.getUri().getPath().contains(".")) {
+        // if the path seems like a directory, and it already failed to serve, try adding '.html'
+        // to the end under the hood and serving it that way. this handles SPA-style routing schemes
+        // that trim the URI of '.html' for a given entrypoint. if this doesn't work, serve a 404
+        // all the same, as @jart intended.
+        final Webpath cloned = Webpath.get(request.getUri().getPath() + ".html").normalize();
+        if (!cloned.isAbsolute()) {
+          response.setStatus(400, "Bad Request URI Path");
+          serveError();
+          return;
+        }
+        if (!fileServer.serve(cloned)) {
+          // still didn't work. 404 it.
+          logger.info(
+            String.format("%s served by patching in '.html'.", request.getUri()));
+          response.setStatus(404);
+          listingPage.serve(webpath);
+          return;
+        } else {
+          logger.info(
+            String.format("%s served by patching in '.html'.", request.getUri()));
+          return;  // the hack worked.
+        }
+      } else {
+        logger.info(
+          String.format("%s did not look like a directory, so it 404d.", request.getUri()));
+      }
+      // it didn't serve, and it doesn't look like a directory. 404 it.
       response.setStatus(404);
       listingPage.serve(webpath);
     }
