@@ -46,6 +46,7 @@ def closure_repositories(
         omit_com_google_java_format = False,
         omit_com_google_javascript_closure_compiler = False,
         omit_com_google_javascript_closure_library = False,
+        omit_com_google_javascript_incremental_dom = False,
         omit_com_google_jsinterop_annotations = False,
         omit_com_google_protobuf = False,
         omit_com_google_protobuf_java = False,
@@ -128,6 +129,8 @@ def closure_repositories(
         com_google_javascript_closure_compiler()
     if not omit_com_google_javascript_closure_library:
         com_google_javascript_closure_library()
+    if not omit_com_google_javascript_incremental_dom:
+        com_google_javascript_incremental_dom()
     if not omit_com_google_jsinterop_annotations:
         com_google_jsinterop_annotations()
     if not omit_com_google_protobuf:
@@ -366,9 +369,9 @@ def com_google_closure_stylesheets():
         name = "com_google_closure_stylesheets",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b3.jar"
+            "https://storage.googleapis.com/bloom-software/closure-stylesheets-1.6.0-b4.jar"
         ],
-        jar_sha256 = "429595e2a80f1580059006aab141afa47cb7352ec833820552bb25f1d2ef4542",
+        jar_sha256 = "364f10a71163e56e86ee5233d9080d42fd45706345dafa3ffdeb333c1ba44e2c",
         deps = [
             "@args4j",
             "@com_google_javascript_closure_compiler",
@@ -685,6 +688,19 @@ def com_google_javascript_closure_compiler():
         ]),
     )
 
+def com_google_javascript_incremental_dom():
+    # To update Incremental DOM, one needs to update
+    # third_party/javascript/incremental_dom/build.sh to remain compatible with
+    # the upstream "js-closure" gulpfile.js target.
+    # https://github.com/google/incremental-dom/blob/master/gulpfile.js
+    http_archive(
+        name = "com_google_javascript_incremental_dom",
+        url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
+        strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
+        sha256 = "82c041a1a81368b6cac5ebab3cde4da212364674b2d74d4cb0931f7068f7636e",
+        build_file = str(Label("//closure/templates:idom.bzl")),
+    )
+
 def com_google_javascript_closure_library():
     # After updating: bazel run //closure/library:regenerate -- "$PWD"
     http_archive(
@@ -738,10 +754,9 @@ def com_google_template_soy():
         name = "com_google_template_soy",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11.jar",
-            "https://repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11.jar",
+            "https://storage.googleapis.com/bloom-software/java-soy-b3.jar"
         ],
-        jar_sha256 = "ceb0e78cf1cadefa17493bbd0a913314558e34dd30e4d7d92e406f69c2670725",
+        jar_sha256 = "609becb2c5be85aa5da6bd8db484253c623cffc006ca6c8a50193d16c5e564aa",
         deps = [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -771,6 +786,7 @@ def com_google_template_soy():
                 "SoyParseInfoGenerator",
                 "SoyToJbcSrcCompiler",
                 "SoyToJsSrcCompiler",
+                "SoyToIncrementalDomSrcCompiler",
                 "SoyToPySrcCompiler",
             )
         ]),

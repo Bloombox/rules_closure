@@ -19,6 +19,7 @@ load(
     "CLOSURE_JS_TOOLCHAIN_ATTRS",
     "JS_FILE_TYPE",
     "JS_LANGUAGE_IN",
+    "SOY_FILE_TYPE",
     "collect_js",
     "collect_runfiles",
     "convert_path_to_es6_module_name",
@@ -46,7 +47,9 @@ def create_closure_js_library(
         exports = [],
         suppress = [],
         lenient = False,
-        convention = "CLOSURE"):
+        convention = "CLOSURE",
+        _proto_target = None,
+        _transitive_proto_targets = None):
     """ Returns closure_js_library metadata with provided attributes.
 
     Note that the returned struct is not a proper provider since existing contract
@@ -67,10 +70,23 @@ def create_closure_js_library(
         but also propagate up to closure_js_binary.
       lenient: makes the library lenient which suppresses handful of checkings in
         one shot.
+      convention: coding convention of the sources. Defaults to `CLOSURE`.
+      _proto_target: Internal use only. Indicates this is being called from
+        `closure_proto_library`, with the original proto target.
+      _transitive_proto_targets: Internal use only. Indicates that this is being
+        called from `closure_proto_library`, with transitive proto dependencies.
 
     Returns:
       A closure_js_library metadata struct with exports and closure_js_library attribute
     """
+
+    descriptors = []
+    transitive_descriptors = []
+
+    if _proto_target != None:
+        descriptors = [_proto_target]
+        if _transitive_proto_targets != None:
+            transitive_descriptors = _transitive_proto_targets
 
     if not hasattr(ctx.files, "_ClosureWorker") or not hasattr(ctx.files, "_closure_library_base"):
         fail("Closure toolchain undefined; rule should include CLOSURE_JS_TOOLCHAIN_ATTRS")
@@ -87,6 +103,8 @@ def create_closure_js_library(
         exports = exports,
         suppress = suppress,
         lenient = lenient,
+        descriptors = descriptors,
+        transitive_descriptors = transitive_descriptors,
         convention = convention,
         testonly = testonly,
         closure_library_base = ctx.files._closure_library_base,
@@ -107,10 +125,12 @@ def _closure_js_library_impl(
         closure_worker,
         includes = (),
         exports = depset(),
+        descriptors = [],
+        transitive_descriptors = depset(),
         internal_descriptors = depset(),
+        internal_templates = depset(),
         no_closure_library = False,
         internal_expect_failure = False,
-
         # These file definitions for our outputs are deprecated,
         # and will be replaced with |actions.declare_file()| soon.
         deprecated_info_file = None,
@@ -308,6 +328,12 @@ def _closure_js_library_impl(
 
     if type(internal_descriptors) == "list":
         internal_descriptors = depset(internal_descriptors)
+    if type(internal_templates) == "list":
+        internal_templates = depset(internal_templates)
+    if type(transitive_descriptors) == "list":
+        transitive_descriptors = depset(transitive_descriptors)
+    if descriptors == None:
+        descriptors = []
 
     # We now export providers to any parent Target. This is considered a public
     # interface because other Skylark rules can be designed to do things with
@@ -367,7 +393,12 @@ def _closure_js_library_impl(
             # closure. It is used so Closure Templates can have information about
             # the structure of protobufs so they can be easily rendered in .soy
             # files with type safety. See closure_js_template_library.bzl.
-            descriptors = depset(transitive = [js.descriptors, internal_descriptors]),
+            descriptors = depset(descriptors, transitive = [
+                transitive_descriptors, js.descriptors, internal_descriptors]),
+            # NestedSet<File> of all Soy template sources involved with this JS
+            # library, which are required in some circumstances for downstream Soy
+            # templates, like when using the Incremental DOM backend.
+            templates = depset(transitive = [js.templates, internal_templates]),
             # NestedSet<Label> of all closure_css_library rules in the transitive
             # closure. This is used by closure_js_binary can guarantee the
             # completeness of goog.getCssName() substitutions.
@@ -409,7 +440,10 @@ def _closure_js_library(ctx):
         ctx.executable._ClosureWorker,
         getattr(ctx.attr, "includes", []),
         ctx.attr.exports,
+        getattr(ctx.attr, "descriptors", []),
+        getattr(ctx.attr, "transitive_descriptors", []),
         ctx.files.internal_descriptors,
+        ctx.files.internal_templates,
         ctx.attr.no_closure_library,
         ctx.attr.internal_expect_failure,
 
@@ -451,6 +485,14 @@ closure_js_library = rule(
             aspects = [closure_js_aspect],
             providers = ["closure_js_library"],
         ),
+        "descriptors": attr.label_list(
+            mandatory = False,
+            providers = [ProtoInfo],
+        ),
+        "transitive_descriptors": attr.label_list(
+            mandatory = False,
+            providers = [ProtoInfo],
+        ),
         "exports": attr.label_list(
             aspects = [closure_js_aspect],
             providers = ["closure_js_library"],
@@ -467,6 +509,7 @@ closure_js_library = rule(
 
         # internal only
         "internal_descriptors": attr.label_list(allow_files = True),
+        "internal_templates": attr.label_list(allow_files = SOY_FILE_TYPE),
         "internal_expect_failure": attr.bool(default = False),
     }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
     # TODO(yannic): Deprecate.

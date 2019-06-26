@@ -20,18 +20,29 @@ load("//closure/compiler:closure_js_library.bzl", "closure_js_library")
 load("//closure/private:defs.bzl", "SOY_FILE_TYPE", "unfurl")
 
 _SOYTOJSSRCCOMPILER = "@com_google_template_soy//:SoyToJsSrcCompiler"
+_SOYTOINCREMENTALDOMSRCCOMPILER = "@com_google_template_soy//:SoyToIncrementalDomSrcCompiler"
+
 
 def _impl(ctx):
-    args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}.js" %
-            ctx.configuration.genfiles_dir.path]
-    if ctx.attr.soy_msgs_are_external:
-        args += ["--googMsgsAreExternal"]
-    if ctx.attr.should_generate_soy_msg_defs:
-        args += ["--shouldGenerateGoogMsgDefs"]
-    if ctx.attr.bidi_global_dir:
-        args += ["--bidiGlobalDir=%s" % ctx.attr.bidi_global_dir]
+    if not ctx.attr.incremental_dom:
+        args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}.js" %
+                ctx.configuration.genfiles_dir.path]
+        if ctx.attr.soy_msgs_are_external:
+            args += ["--googMsgsAreExternal"]
+        if ctx.attr.should_generate_soy_msg_defs:
+            args += ["--shouldGenerateGoogMsgDefs"]
+        if ctx.attr.bidi_global_dir:
+            args += ["--bidiGlobalDir=%s" % ctx.attr.bidi_global_dir]
+        if ctx.attr.plugin_modules:
+            args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
+        args += ["--shouldProvideRequireSoyNamespaces"]
+    else:
+        args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
+                ctx.configuration.genfiles_dir.path]
+
     if ctx.attr.plugin_modules:
         args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
+
     for arg in ctx.attr.defs:
         if not arg.startswith("--") or (" " in arg and "=" not in arg):
             fail("Please use --flag=value syntax for defs")
@@ -43,10 +54,21 @@ def _impl(ctx):
     if ctx.file.globals:
         args += ["--compileTimeGlobalsFile", ctx.file.globals.path]
         inputs.append(ctx.file.globals)
+
+    soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
         for f in dep.closure_js_library.descriptors.to_list():
             args += ["--protoFileDescriptors=%s" % f.path]
             inputs.append(f)
+
+        for f in dep.closure_js_library.templates.to_list():
+            soydeps.append(f.path)
+            inputs.append(f)
+
+    ## prep dependencies for the template, if we have any
+    if len(soydeps) > 0:
+        args += ["--deps=%s" % ",".join(soydeps)]
+
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outputs,
@@ -73,6 +95,7 @@ _closure_js_template_library = rule(
         "should_generate_soy_msg_defs": attr.bool(),
         "bidi_global_dir": attr.int(default = 1, values = [1, -1]),
         "soy_msgs_are_external": attr.bool(),
+        "incremental_dom": attr.bool(),
         "compiler": attr.label(cfg = "host", executable = True, mandatory = True),
         "defs": attr.string_list(),
     },
@@ -83,6 +106,7 @@ def closure_js_template_library(
         srcs,
         deps = [],
         suppress = [],
+        incremental_dom = False,
         testonly = None,
         globals = None,
         plugin_modules = None,
@@ -91,8 +115,12 @@ def closure_js_template_library(
         soy_msgs_are_external = None,
         defs = [],
         **kwargs):
-    compiler = str(Label(_SOYTOJSSRCCOMPILER))
-    js_srcs = [src + ".js" for src in srcs]
+    if incremental_dom:
+        compiler = str(Label(_SOYTOINCREMENTALDOMSRCCOMPILER))
+        js_srcs = [src + "_idom.js" for src in srcs]
+    else:
+        compiler = str(Label(_SOYTOJSSRCCOMPILER))
+        js_srcs = [src + ".js" for src in srcs]
     _closure_js_template_library(
         name = name + "_soy_js",
         srcs = srcs,
@@ -106,6 +134,7 @@ def closure_js_template_library(
         bidi_global_dir = bidi_global_dir,
         soy_msgs_are_external = soy_msgs_are_external,
         compiler = compiler,
+        incremental_dom = incremental_dom,
         defs = defs,
     )
 
@@ -132,16 +161,29 @@ def closure_js_template_library(
         str(Label("//closure/templates:soy_jssrc")),
     ]
 
+    if incremental_dom:
+        deps = deps + [
+            str(Label("//closure/templates:soy_jssrc_idom")),
+            str(Label("@com_google_javascript_incremental_dom//:idom-js")),
+        ]
+
+    base_suppressions = []
+    if incremental_dom:
+        base_suppressions.append("superfluousSuppress")
+        base_suppressions.append("strictModuleChecks")
+        base_suppressions.append("extraRequire")
+
     closure_js_library(
         name = name,
         srcs = js_srcs,
         deps = deps,
         testonly = testonly,
-        suppress = suppress + [
+        suppress = base_suppressions + suppress + [
             "analyzerChecks",
             "reportUnknownTypes",
             "strictCheckTypes",
             "unusedLocalVariables",
         ],
+        internal_templates = srcs,
         **kwargs
     )

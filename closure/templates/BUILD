@@ -57,7 +57,27 @@ closure_js_library(
     ],
 )
 
+closure_js_library(
+    name = "soy_jssrc_idom",
+    srcs = [":idom"],
+    suppress = [
+        "reportUnknownTypes",
+        "strictCheckTypes",
+    ],
+    deps = [
+        ":soy_jssrc",
+        "//closure/library/soy",
+        "//closure/library/soy:data",
+        "@com_google_javascript_incremental_dom//:idom-js"
+    ],
+)
+
 java_library(
     name = "safe_html_types",
     exports = ["@com_google_common_html_types"],
+)
+
+filegroup(
+    name = "idom",
+    srcs = ["soyutils_idom.js"]
 )
