@@ -271,7 +271,7 @@ def _validate_css_graph(ctx, js):
         if missing:
             fail("Dependent JS libraries depend on CSS libraries that weren't " +
                  "compiled into the referenced CSS binary: " +
-                 ", ".join(missing))
+                 ", ".join([str(s) for s in missing]))
     elif js.stylesheets:
         fail("Dependent JS libraries depend on CSS libraries, but the 'css' " +
              "attribute is not set to a closure_css_binary that provides the " +
