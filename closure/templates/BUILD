@@ -72,6 +72,16 @@ closure_js_library(
     ],
 )
 
+closure_js_library(
+    name = "soy_requirements",
+    srcs = [":closure-requirements"],
+    lenient = True,
+    deps = [
+        ":soy_jssrc_idom",
+        "@com_google_javascript_incremental_dom//:idom-js"
+    ],
+)
+
 java_library(
     name = "safe_html_types",
     exports = ["@com_google_common_html_types"],
@@ -80,4 +90,9 @@ java_library(
 filegroup(
     name = "idom",
     srcs = ["soyutils_idom.js"]
+)
+
+filegroup(
+    name = "closure-requirements",
+    srcs = ["soy_requirements_onefile.js"]
 )
