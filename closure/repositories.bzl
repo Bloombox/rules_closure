@@ -786,6 +786,7 @@ def com_google_template_soy():
                 "SoyParseInfoGenerator",
                 "SoyToJbcSrcCompiler",
                 "SoyToJsSrcCompiler",
+                "SoyHeaderCompiler",
                 "SoyToIncrementalDomSrcCompiler",
                 "SoyToPySrcCompiler",
             )
@@ -793,15 +794,15 @@ def com_google_template_soy():
     )
 
 def com_google_template_soy_jssrc():
-    http_archive(
-        name = "com_google_template_soy_jssrc",
-        sha256 = "188a28d3935b0661631bdb518a97d03edd4a597a13a09dd3d92a138c09b59780",
-        urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
-            "https://repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
-        ],
-        build_file = str(Label("//closure/templates:soy_jssrc.BUILD")),
-        type = "zip",
+     http_archive(
+         name = "com_google_template_soy_jssrc",
+         sha256 = "188a28d3935b0661631bdb518a97d03edd4a597a13a09dd3d92a138c09b59780",
+         urls = [
+             "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
+             "https://repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
+         ],
+         build_file = str(Label("//closure/templates:soy_jssrc.BUILD")),
+         type = "zip",
     )
 
 def com_ibm_icu_icu4j():

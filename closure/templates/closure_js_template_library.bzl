@@ -19,9 +19,42 @@ load("//closure/compiler:closure_js_aspect.bzl", "closure_js_aspect")
 load("//closure/compiler:closure_js_library.bzl", "closure_js_library")
 load("//closure/private:defs.bzl", "SOY_FILE_TYPE", "unfurl")
 
+_SOYHEADERCOMPILER = "@com_google_template_soy//:SoyHeaderCompiler"
 _SOYTOJSSRCCOMPILER = "@com_google_template_soy//:SoyToJsSrcCompiler"
 _SOYTOINCREMENTALDOMSRCCOMPILER = "@com_google_template_soy//:SoyToIncrementalDomSrcCompiler"
 
+
+def _lib_impl(ctx):
+    args = []
+    for arg in ctx.attr.defs:
+        if not arg.startswith("--") or (" " in arg and "=" not in arg):
+            fail("Please use --flag=value syntax for defs")
+        args += [arg]
+    inputs = []
+    for f in ctx.files.srcs:
+        args.append("--srcs=" + f.path)
+        inputs.append(f)
+    hdeps = []
+    for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
+        for f in dep.closure_js_library.descriptors.to_list():
+            args += ["--protoFileDescriptors=%s" % f.path]
+            inputs.append(f)
+        for f in dep.closure_js_library.templates.to_list():
+            hdeps.append(f.path)
+            inputs.append(f)
+    #if len(hdeps) > 0:
+    #    args += ["--depHeaders=%s" % ",".join(hdeps.replace(".soy", ".soyh"))]
+
+    ctx.actions.run(
+        inputs = inputs,
+        outputs = ctx.outputs.outputs,
+        executable = ctx.executable.compiler,
+        arguments = args,
+        mnemonic = "SoyHeaderCompiler",
+        progress_message = "Generating %d SOY header file(s)" % len(
+            ctx.attr.outputs,
+        ),
+    )
 
 def _impl(ctx):
     if not ctx.attr.incremental_dom:
@@ -57,13 +90,17 @@ def _impl(ctx):
 
     soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
-        for f in dep.closure_js_library.descriptors.to_list():
-            args += ["--protoFileDescriptors=%s" % f.path]
-            inputs.append(f)
+        dep_descriptors = getattr(dep.closure_js_library, "descriptors", None)
+        if dep_descriptors:
+            for f in dep_descriptors.to_list():
+                args += ["--protoFileDescriptors=%s" % f.path]
+                inputs.append(f)
 
-        for f in dep.closure_js_library.templates.to_list():
-            soydeps.append(f.path)
-            inputs.append(f)
+        dep_templates = getattr(dep.closure_js_library, "templates", None)
+        if dep_templates:
+            for f in dep_templates.to_list():
+                soydeps.append(f.path)
+                inputs.append(f)
 
     ## prep dependencies for the template, if we have any
     if len(soydeps) > 0:
@@ -79,6 +116,21 @@ def _impl(ctx):
             ctx.attr.outputs,
         ),
     )
+
+_closure_template_library = rule(
+    implementation = _lib_impl,
+    output_to_genfiles = True,
+    attrs = {
+        "srcs": attr.label_list(allow_files = SOY_FILE_TYPE),
+        "deps": attr.label_list(
+            aspects = [closure_js_aspect],
+            providers = ["closure_js_library"],
+        ),
+        "outputs": attr.output_list(),
+        "compiler": attr.label(cfg = "host", executable = True, mandatory = True),
+        "defs": attr.string_list(),
+    },
+)
 
 _closure_js_template_library = rule(
     implementation = _impl,
@@ -100,6 +152,21 @@ _closure_js_template_library = rule(
         "defs": attr.string_list(),
     },
 )
+
+
+def closure_template_library(
+        name,
+        srcs,
+        deps = []):
+    compiler = str(Label(_SOYHEADERCOMPILER))
+    header_srcs = [src + "_idom.js" for src in srcs]
+    _closure_template_library(
+        name,
+        srcs = srcs,
+        deps = deps,
+        outputs = header_srcs,
+        compiler = compiler)
+
 
 def closure_js_template_library(
         name,
