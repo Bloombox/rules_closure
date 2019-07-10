@@ -226,6 +226,7 @@ def closure_js_template_library(
         str(Label("//closure/library/string:const")),
         str(Label("//closure/library/uri")),
         str(Label("//closure/templates:soy_jssrc")),
+        str(Label("//closure/templates:soy_jssrc_map")),
     ]
 
     if incremental_dom:

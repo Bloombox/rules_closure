@@ -73,6 +73,16 @@ closure_js_library(
 )
 
 closure_js_library(
+    name = "soy_jssrc_map",
+    srcs = [":soy_map_js"],
+    deps = [
+        "//closure/library/array",
+        "//closure/library/asserts",
+    ],
+)
+
+
+closure_js_library(
     name = "soy_requirements",
     srcs = [":closure-requirements"],
     lenient = True,
@@ -90,6 +100,11 @@ java_library(
 filegroup(
     name = "idom",
     srcs = ["soyutils_idom.js"]
+)
+
+filegroup(
+    name = "soy_map_js",
+    srcs = ["soyutils_map.js"]
 )
 
 filegroup(
