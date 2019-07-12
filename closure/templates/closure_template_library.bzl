@@ -1,4 +1,4 @@
-# Copyright 2018 The Closure Rules Authors. All rights reserved.
+# Copyright 2016 The Closure Rules Authors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,95 +12,109 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Utilities for building generic Soy templates.
-"""
+"""Build definitions for Closure Stylesheet libraries."""
 
-load("//closure/compiler:closure_js_library.bzl", "create_closure_js_library")
-load("//closure/private:defs.bzl", "CLOSURE_JS_TOOLCHAIN_ATTRS", "unfurl")
-
-
-def _closure_tpl_header_output_name(src):
-    # src is of format <path/to/file>.soy
-    return ["{}.soyh".format(src[:-4])]
-
-
-def _closure_tpl_aspect_impl(target, ctx):
-    srcs = proto_common.lang_proto_aspect_impl(
-        actions = ctx.actions,
-        toolchain = ctx.toolchains[proto_common.TOOLCHAIN_TYPE],
-        flavor = "Closure",
-        get_generator_options = _closure_proto_options,
-        get_generator_options_params = struct(
-            testonly = getattr(ctx.rule.attr, "testonly", False),
-        ),
-        get_output_files = _closure_tpl_header_output_name,
-        language = "proto",
-        target = target,
-    )
-
-    deps = unfurl(ctx.rule.attr.deps, provider = "closure_js_library")
-    deps += [ctx.attr._closure_protobuf_runtime]
-
-    suppress = [
-        "missingProperties",
-        "unusedLocalVariables",
-    ]
-
-    protoinfo = getattr(target, "proto", None)
-    if protoinfo == None:
-        fail("No protoinfo for target: %s" % target)
-
-    direct_descriptor = getattr(protoinfo, "direct_descriptor_set", None)
-    if direct_descriptor == None:
-        fail("No direct descriptor for target: %s" % target)
-
-    transitive_descriptor_sets = getattr(protoinfo, "transitive_descriptor_sets", None)
-    if transitive_descriptor_sets == None:
-        transitive_descriptor_sets = []
-
-    library = create_closure_js_library(
-        ctx, srcs, deps, [], suppress, True,
-        _proto_target=direct_descriptor,
-        _transitive_proto_targets=transitive_descriptor_sets)
-
-    return struct(
-        exports = library.exports,
-        closure_js_library = library.closure_js_library,
-    )
-
-closure_tpl_aspect = proto_common.lang_proto_aspect(
-    attrs = dict({
-        # internal only
-        "_closure_protobuf_runtime": attr.label(
-            default = Label("//closure/protobuf:runtime"),
-        ),
-    }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
-    implementation = _closure_proto_aspect_impl,
-    provides = [
-        "closure_js_library",
-        "exports",
-    ],
+load(
+    "//closure/private:defs.bzl",
+    "SOY_FILE_TYPE",
+    "SOY_HEADER_FILE_TYPE",
+    "CLOSURE_JS_TOOLCHAIN_ATTRS",
+    "collect_template_headers",
+    "collect_runfiles",
+    "unfurl",
 )
 
-def _closure_tpl_library_impl(ctx):
-    if len(ctx.attr.deps) > 1:
-        # TODO(yannic): Revisit this restriction.
-        fail(_error_multiple_deps, "deps")
+_SOYHEADERCOMPILER = "@com_google_template_soy//:SoyHeaderCompiler"
 
-    dep = ctx.attr.deps[0]
+
+def _lib_impl(ctx):
+    args = []
+    for arg in ctx.attr.defs:
+        if not arg.startswith("--") or (" " in arg and "=" not in arg):
+            fail("Please use --flag=value syntax for defs")
+        args += [arg]
+    inputs = []
+    for f in ctx.files.srcs:
+        args.append("--srcs=" + f.path)
+        inputs.append(f)
+    hdeps = []
+    for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
+        tpl_descriptors = getattr(dep.closure_js_library, "descriptors", None)
+        if tpl_descriptors:
+            for f in tpl_descriptors.to_list():
+                args += ["--protoFileDescriptors=%s" % f.path]
+                inputs.append(f)
+
+        tpl_headers = getattr(dep.closure_js_library, "template_headers", None)
+        if tpl_headers:
+            for f in tpl_headers.to_list():
+                hdeps.append(f.path)
+                inputs.append(f)
+
+    if len(hdeps) > 0:
+       args += ["--depHeaders=%s" % ",".join(hdeps)]
+    args += ["--output=%s" % ctx.outputs.outputs[0]]
+
+    ctx.actions.run(
+        inputs = inputs,
+        outputs = ctx.outputs.outputs,
+        executable = ctx.executable.compiler,
+        arguments = args,
+        mnemonic = "SoyHeaderCompiler",
+        progress_message = "Generating %d SOY header file(s)" % len(
+            ctx.attr.outputs,
+        ),
+    )
+
+def _closure_tpl_library(ctx):
+    deps = unfurl(ctx.attr.deps, provider = "closure_tpl_library")
+    tpls = collect_template_headers(deps)
+    _lib_impl(ctx)
+
     return struct(
         files = depset(),
-        exports = dep.exports,
-        closure_js_library = dep.closure_js_library,
+        exports = unfurl(ctx.attr.exports),
+        closure_js_library = struct(),
+        closure_tpl_library = struct(
+            srcs = depset(ctx.files.srcs, transitive = [tpls.srcs]),
+            labels = depset([ctx.label], transitive = [tpls.labels]),
+        ),
+        runfiles = ctx.runfiles(
+            files = ctx.files.srcs + ctx.files.data,
+            transitive_files = depset(
+                transitive = [collect_runfiles(deps), collect_runfiles(ctx.attr.data)],
+            ),
+        ),
     )
 
-closure_proto_library = rule(
+_closure_template_library = rule(
+    implementation = _closure_tpl_library,
+    output_to_genfiles = True,
     attrs = {
-        "deps": attr.label_list(
-            mandatory = True,
-            providers = [ProtoInfo],
-            aspects = [closure_proto_aspect],
-        ),
+        "srcs": attr.label_list(allow_files = SOY_FILE_TYPE),
+        "outputs": attr.output_list(),
+        "data": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = ["closure_tpl_library"]),
+        "compiler": attr.label(cfg = "host", executable = True, mandatory = True),
+        "defs": attr.string_list(),
+        "exports": attr.label_list(),
     },
-    implementation = _closure_proto_library_impl,
 )
+
+def closure_template_library(
+    name,
+    srcs = [],
+    data = [],
+    deps = [],
+    defs = []):
+
+    """Implements closure template libraries."""
+
+    _closure_template_library(
+        name = name,
+        srcs = srcs,
+        deps = deps,
+        data = data,
+        defs = defs,
+        outputs = ["%s.soyh" % name],
+        compiler = _SOYHEADERCOMPILER)

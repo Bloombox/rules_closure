@@ -31,13 +31,18 @@ closure_js_proto_library(
 
 closure_js_library(
     name = "soy_jssrc",
-    srcs = ["@com_google_template_soy_jssrc"],
+    srcs = [
+        "xid.js",
+        "soyutils_ijdata.js",
+        "@com_google_template_soy_jssrc"],
     lenient = True,
     deps = [
         ":soy_html_proto",
+        "//closure/protobuf:jspb",
         "//closure/library/array",
         "//closure/library/asserts",
         "//closure/library/debug",
+        "//closure/library/dom",
         "//closure/library/format",
         "//closure/library/html:safehtml",
         "//closure/library/html:safescript",
@@ -59,35 +64,20 @@ closure_js_library(
 
 closure_js_library(
     name = "soy_jssrc_idom",
-    srcs = [":idom"],
+    srcs = [
+        "@com_google_template_soy_jssrc//:idom"],
     suppress = [
         "reportUnknownTypes",
         "strictCheckTypes",
+        "lintChecks",
+        "JSC_NULLABLE_RETURN_WITH_NAME",
     ],
     deps = [
         ":soy_jssrc",
+        "//closure/library/asserts",
         "//closure/library/soy",
         "//closure/library/soy:data",
-        "@com_google_javascript_incremental_dom//:idom-js"
-    ],
-)
-
-closure_js_library(
-    name = "soy_jssrc_map",
-    srcs = [":soy_map_js"],
-    deps = [
-        "//closure/library/array",
-        "//closure/library/asserts",
-    ],
-)
-
-
-closure_js_library(
-    name = "soy_requirements",
-    srcs = [":closure-requirements"],
-    lenient = True,
-    deps = [
-        ":soy_jssrc_idom",
+        "//closure/library/string",
         "@com_google_javascript_incremental_dom//:idom-js"
     ],
 )
@@ -95,19 +85,4 @@ closure_js_library(
 java_library(
     name = "safe_html_types",
     exports = ["@com_google_common_html_types"],
-)
-
-filegroup(
-    name = "idom",
-    srcs = ["soyutils_idom.js"]
-)
-
-filegroup(
-    name = "soy_map_js",
-    srcs = ["soyutils_map.js"]
-)
-
-filegroup(
-    name = "closure-requirements",
-    srcs = ["soy_requirements_onefile.js"]
 )
