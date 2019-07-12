@@ -754,9 +754,9 @@ def com_google_template_soy():
         name = "com_google_template_soy",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://storage.googleapis.com/bloom-software/java-soy-b3.jar"
+            "https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b12.jar"
         ],
-        jar_sha256 = "609becb2c5be85aa5da6bd8db484253c623cffc006ca6c8a50193d16c5e564aa",
+        jar_sha256 = "129d3a2b7a1963e516000d15ddf6c7866e6548ab7213a5249ffd5b94fe3c5e10",
         deps = [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -794,12 +794,11 @@ def com_google_template_soy():
     )
 
 def com_google_template_soy_jssrc():
-     http_archive(
+    http_archive(
          name = "com_google_template_soy_jssrc",
-         sha256 = "188a28d3935b0661631bdb518a97d03edd4a597a13a09dd3d92a138c09b59780",
+         sha256 = "eb672ae3d818f18b1a12a7fdb91fce4e34f9913b57629b20071080ca06e86fce",
          urls = [
-             "https://mirror.bazel.build/repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
-             "https://repo1.maven.org/maven2/com/google/template/soy/2019-03-11/soy-2019-03-11-jssrc_js.jar",
+             "https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b12.jar",
          ],
          build_file = str(Label("//closure/templates:soy_jssrc.BUILD")),
          type = "zip",
