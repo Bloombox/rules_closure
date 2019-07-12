@@ -83,8 +83,6 @@ def create_closure_js_library(
       A closure_js_library metadata struct with exports and closure_js_library attribute
     """
 
-    print("!!!!! SOURCES: %s" % (str(srcs)))
-
     descriptors = []
     transitive_descriptors = []
 
