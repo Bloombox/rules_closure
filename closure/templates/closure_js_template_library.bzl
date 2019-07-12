@@ -91,9 +91,6 @@ _closure_js_template_library = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = SOY_FILE_TYPE),
         "deps": attr.label_list(
-            providers = ["closure_tpl_library"],
-        ),
-        "js_deps": attr.label_list(
             aspects = [closure_js_aspect],
             providers = ["closure_js_library"],
         ),
@@ -114,7 +111,6 @@ def closure_js_template_library(
         name,
         srcs,
         deps = [],
-        js_deps = [],
         suppress = [],
         incremental_dom = False,
         testonly = None,
@@ -136,7 +132,6 @@ def closure_js_template_library(
         name = name + "_soy_js",
         srcs = srcs,
         deps = deps,
-        js_deps = js_deps,
         outputs = js_srcs,
         testonly = testonly,
         visibility = ["//visibility:private"],
@@ -150,7 +145,7 @@ def closure_js_template_library(
         defs = defs,
     )
 
-    js_deps = js_deps + [
+    deps = deps + [
         str(Label("//closure/library/array")),
         str(Label("//closure/library/asserts")),
         str(Label("//closure/library/debug")),
@@ -174,7 +169,7 @@ def closure_js_template_library(
     ]
 
     if incremental_dom:
-        js_deps = js_deps + [
+        deps = deps + [
             str(Label("//closure/templates:soy_jssrc_idom")),
             str(Label("@com_google_javascript_incremental_dom//:idom-js")),
         ]
@@ -188,7 +183,7 @@ def closure_js_template_library(
     closure_js_library(
         name = name,
         srcs = js_srcs,
-        deps = deps + js_deps,
+        deps = deps,
         testonly = testonly,
         suppress = base_suppressions + suppress + [
             "analyzerChecks",
