@@ -1,27 +1,17 @@
 
 /* global goog */
 
-goog.provide('ui.xid');
 goog.provide('xid');
 
 
 /**
- * Mock rewrite function for IDs.
+ * Base XID function, which rewrites CSS IDs. This function is provided for Soy templates which demand
+ * an ID function to generate template instance IDs.
  *
+ * @idGenerator {xid}
  * @param {!string} identifier Identifier to process or otherwise transform.
  * @returns {!string} Transformed identifier.
  */
 const xid = function(identifier) {
   return identifier;
-};
-
-
-/**
- * Mock rewrite function for IDs.
- *
- * @param {!string} identifier Identifier to process or otherwise transform.
- * @returns {!string} Transformed identifier.
- */
-ui.xid = function(identifier) {
-  return xid(identifier);
 };
