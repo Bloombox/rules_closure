@@ -2,6 +2,7 @@
 /* global goog */
 
 goog.provide('xid');
+goog.provide('ui.xid');
 
 
 /**
@@ -15,3 +16,11 @@ goog.provide('xid');
 const xid = function(identifier) {
   return identifier;
 };
+
+
+/**
+ * Alias for the base XID function.
+ *
+ * @public
+ */
+ui.xid = xid;
