@@ -754,9 +754,9 @@ def com_google_template_soy():
         name = "com_google_template_soy",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b15.jar"
+            "https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b16.jar"
         ],
-        jar_sha256 = "69f5d92dbc2825e2fe20fc33eff47fe5d02993dd49d679655a3c674a13d7b95a",
+        jar_sha256 = "f719336079d0aa5e4c4a038f9a835c53c86d28e53887325aa98cd374d970b479",
         deps = [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
@@ -796,9 +796,9 @@ def com_google_template_soy():
 def com_google_template_soy_jssrc():
     http_archive(
          name = "com_google_template_soy_jssrc",
-         sha256 = "065becc150c719f7adf8a59ac0fccf6608f3ecbde29afd22fc84ca13baab94c2",
+         sha256 = "1b9242a31d1c9f19261a7f723bfe0fef1b333dfb10da274a24990df6594e1927",
          urls = [
-             "https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b15.jar",
+             "https://storage.googleapis.com/bloom-software/frontend/soy/soy-jssrc-b16.jar",
          ],
          build_file = str(Label("//closure/templates:soy_jssrc.BUILD")),
          type = "zip",
