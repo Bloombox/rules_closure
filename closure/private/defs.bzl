@@ -21,9 +21,10 @@ JS_FILE_TYPE = [".js"]
 JS_LANGUAGE_DEFAULT = "ECMASCRIPT5_STRICT"
 JS_TEST_FILE_TYPE = ["_test.js"]
 SOY_FILE_TYPE = [".soy"]
+SOY_HEADER_FILE_TYPE = [".soyh"]
 
-JS_LANGUAGE_IN = "ECMASCRIPT_2017"
-JS_LANGUAGE_OUT_DEFAULT = "ECMASCRIPT5"
+JS_LANGUAGE_IN = "ECMASCRIPT_2019"
+JS_LANGUAGE_OUT_DEFAULT = "ECMASCRIPT_2017"
 JS_LANGUAGES = depset([
     "ECMASCRIPT3",
     "ECMASCRIPT5",
@@ -158,6 +159,20 @@ def collect_runfiles(targets):
         if hasattr(target, "default_runfiles"):
             data.append(target.default_runfiles.files)
     return depset(transitive = data)
+
+def collect_template_headers(targets):
+    """Aggregates template headers from targets."""
+    srcs = []
+    labels = []
+    for target in targets:
+        if hasattr(target.closure_tpl_library, "srcs"):
+            srcs.append(getattr(target.closure_tpl_library, "srcs"))
+        if hasattr(target.closure_tpl_library, "labels"):
+            labels.append(getattr(target.closure_tpl_library, "labels"))
+    return struct(
+        srcs = depset(transitive = srcs),
+        labels = depset(transitive = labels),
+    )
 
 def find_js_module_roots(srcs, workspace_name, label, includes):
     """Finds roots of JavaScript sources.

@@ -20,8 +20,22 @@ filegroup(
     name = "com_google_template_soy_jssrc",
     srcs = [
         "checks.js",
+        "global.js",
         "jspbconversions.js",
         "soydata_converters.js",
         "soyutils_usegoog.js",
+        "soyutils_directives.js",
+        "soyutils_map.js",
+        "soyutils_newmaps.js",
+        "soyutils_velog.js",
+    ],
+)
+
+filegroup(
+    name = "idom",
+    srcs = [
+        "api_idom.js",
+        "element_lib_idom.js",
+        "soyutils_idom.js",
     ],
 )

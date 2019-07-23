@@ -17,6 +17,7 @@
 
 load("//closure/compiler:closure_js_aspect.bzl", "closure_js_aspect")
 load("//closure/compiler:closure_js_library.bzl", "closure_js_library")
+load("//closure/templates:closure_template_library.bzl", "closure_template_library")
 load("//closure/private:defs.bzl", "SOY_FILE_TYPE", "unfurl")
 
 _SOYTOJSSRCCOMPILER = "@com_google_template_soy//:SoyToJsSrcCompiler"
@@ -35,10 +36,10 @@ def _impl(ctx):
             args += ["--bidiGlobalDir=%s" % ctx.attr.bidi_global_dir]
         if ctx.attr.plugin_modules:
             args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
-        args += ["--shouldProvideRequireSoyNamespaces"]
     else:
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}_idom.js" %
                 ctx.configuration.genfiles_dir.path]
+    args += ["--shouldPostfixNamespaces=false"]
 
     if ctx.attr.plugin_modules:
         args += ["--pluginModules=%s" % ",".join(ctx.attr.plugin_modules)]
@@ -55,19 +56,24 @@ def _impl(ctx):
         args += ["--compileTimeGlobalsFile", ctx.file.globals.path]
         inputs.append(ctx.file.globals)
 
-    soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
-        for f in dep.closure_js_library.descriptors.to_list():
-            args += ["--protoFileDescriptors=%s" % f.path]
-            inputs.append(f)
+        dep_descriptors = getattr(dep.closure_js_library, "descriptors", None)
+        if dep_descriptors:
+            for f in dep_descriptors.to_list():
+                args += ["--protoFileDescriptors=%s" % f.path]
+                inputs.append(f)
 
-        for f in dep.closure_js_library.templates.to_list():
-            soydeps.append(f.path)
-            inputs.append(f)
+    soydeps = []
+    for dep in unfurl(ctx.attr.deps, provider = "closure_tpl_library"):
+        dep_templates = getattr(dep.closure_js_library, "outputs", None)
+        if dep_templates:
+            for f in dep_templates.to_list():
+                soydeps.append(f.path)
+                inputs.append(f)
 
     ## prep dependencies for the template, if we have any
     if len(soydeps) > 0:
-        args += ["--deps=%s" % ",".join(soydeps)]
+        args += ["--depHeaders=%s" % ",".join(soydeps)]
 
     ctx.actions.run(
         inputs = inputs,
@@ -101,6 +107,7 @@ _closure_js_template_library = rule(
     },
 )
 
+
 def closure_js_template_library(
         name,
         srcs,
@@ -121,6 +128,7 @@ def closure_js_template_library(
     else:
         compiler = str(Label(_SOYTOJSSRCCOMPILER))
         js_srcs = [src + ".js" for src in srcs]
+
     _closure_js_template_library(
         name = name + "_soy_js",
         srcs = srcs,
