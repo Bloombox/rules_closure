@@ -51,6 +51,7 @@ def closure_java_template_library(
         extra_srcs = [],
         extra_outs = [],
         allow_external_calls = 1,
+        root_directory = None,
         soycompilerbin = str(Label(_SOY_COMPILER_BIN)),
         **kwargs):
     # Strip off the .soy suffix from the file name and camel-case it, preserving
@@ -60,7 +61,7 @@ def closure_java_template_library(
          "SoyInfo.java")
         for fn in srcs
     ]
-    java_package = java_package or _soy__GetJavaPackageForCurrentDirectory()
+    java_package = java_package or _soy__GetJavaPackageForCurrentDirectory(root_directory)
 
     # TODO(gboyer): Stop generating the info for all the dependencies.
     # First, generate the actual AbcSoyInfo.java files.
@@ -189,11 +190,13 @@ def _soy__gen_file_list_arg_as_file(
         visibility = ["//visibility:private"],
     )
 
-def _soy__GetJavaPackageForCurrentDirectory():
+def _soy__GetJavaPackageForCurrentDirectory(root_dir):
     """Returns the java package corresponding to the current directory."""
     directory = native.package_name()
-    for prefix in ("java/", "javatests/"):
+    for prefix in (root_dir or "java/", "javatests/"):
         if directory.startswith(prefix):
+            if root_dir:
+                return ".".join(directory.split("/"))
             return ".".join(directory[len(prefix):].split("/"))
         i = directory.find("/" + prefix)
         if i != -1:
