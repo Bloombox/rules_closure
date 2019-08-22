@@ -124,6 +124,7 @@ def closure_java_template_library(
         soycompilerbin = str(Label(_SOY_COMPILER_BIN)),
         **kwargs):
     proto_deps = [dep for dep in deps if "proto" in dep]
+    soy_deps = [dep for dep in deps if "tpl" in dep]
     java_package = java_package or _soy__GetJavaPackageForCurrentDirectory(root_directory)
 
     # Strip off the .soy suffix from the file name and camel-case it, preserving
@@ -149,6 +150,7 @@ def closure_java_template_library(
 
     java_protos = [proto.replace("-closure_proto", "") for proto in proto_deps]
     java_protos = [("%s-java_proto" % proto) for proto in java_protos]
+    java_soydeps = [("%s-java" % tpl) for tpl in soy_deps]
 
     if len(java_protos) > 0:
         java_protos += ["@com_google_protobuf//:protobuf_java"]
@@ -158,7 +160,10 @@ def closure_java_template_library(
     native.java_library(
         name = name,
         srcs = java_srcs or None,
-        exports = [str(Label(_SOY_LIBRARY))],
+        exports = [
+            str(Label(_SOY_LIBRARY))] +  # export Soy library
+            java_protos +  # export java protos
+            java_soydeps,
         deps = ([
             "@com_google_guava",
             "@javax_annotation_jsr250_api",
