@@ -949,10 +949,9 @@ def org_ow2_asm():
     java_import_external(
         name = "org_ow2_asm",
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/org/ow2/asm/asm/6.0/asm-6.0.jar",
-            "https://repo1.maven.org/maven2/org/ow2/asm/asm/6.0/asm-6.0.jar",
+            "https://repo1.maven.org/maven2/org/ow2/asm/asm/7.0/asm-7.0.jar",
         ],
-        jar_sha256 = "dd8971c74a4e697899a8e95caae4ea8760ea6c486dc6b97b1795e75760420461",
+        jar_sha256 = "b88ef66468b3c978ad0c97fd6e90979e56155b4ac69089ba7a44e9aa7ffe9acf",
         licenses = ["notice"],  # BSD 3-clause
     )
 
@@ -960,10 +959,9 @@ def org_ow2_asm_analysis():
     java_import_external(
         name = "org_ow2_asm_analysis",
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/org/ow2/asm/asm-analysis/6.0/asm-analysis-6.0.jar",
-            "https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/6.0/asm-analysis-6.0.jar",
+            "https://repo1.maven.org/maven2/org/ow2/asm/asm-analysis/7.0/asm-analysis-7.0.jar",
         ],
-        jar_sha256 = "2f1a6387219c3a6cc4856481f221b03bd9f2408a326d416af09af5d6f608c1f4",
+        jar_sha256 = "e981f8f650c4d900bb033650b18e122fa6b161eadd5f88978d08751f72ee8474",
         licenses = ["notice"],  # BSD 3-clause
         exports = [
             "@org_ow2_asm",
@@ -976,10 +974,9 @@ def org_ow2_asm_commons():
         name = "org_ow2_asm_commons",
         licenses = ["notice"],  # BSD 3-clause
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/org/ow2/asm/asm-commons/6.0/asm-commons-6.0.jar",
-            "https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/6.0/asm-commons-6.0.jar",
+            "https://repo1.maven.org/maven2/org/ow2/asm/asm-commons/7.0/asm-commons-7.0.jar",
         ],
-        jar_sha256 = "f1bce5c648a96a017bdcd01fe5d59af9845297fd7b79b81c015a6fbbd9719abf",
+        jar_sha256 = "fed348ef05958e3e846a3ac074a12af5f7936ef3d21ce44a62c4fa08a771927d",
         exports = ["@org_ow2_asm_tree"],
     )
 
@@ -988,10 +985,9 @@ def org_ow2_asm_tree():
         name = "org_ow2_asm_tree",
         licenses = ["notice"],  # BSD 3-clause
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/org/ow2/asm/asm-tree/6.0/asm-tree-6.0.jar",
-            "https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/6.0/asm-tree-6.0.jar",
+            "https://repo1.maven.org/maven2/org/ow2/asm/asm-tree/7.0/asm-tree-7.0.jar",
         ],
-        jar_sha256 = "887998fb69727c8759e4d253f856822801e33f9fd4caa566b3ac58ee92106215",
+        jar_sha256 = "cfd7a0874f9de36a999c127feeadfbfe6e04d4a71ee954d7af3d853f0be48a6c",
         exports = ["@org_ow2_asm"],
     )
 
@@ -1000,10 +996,9 @@ def org_ow2_asm_util():
         name = "org_ow2_asm_util",
         licenses = ["notice"],  # BSD 3-clause
         jar_urls = [
-            "https://mirror.bazel.build/repo1.maven.org/maven2/org/ow2/asm/asm-util/6.0/asm-util-6.0.jar",
-            "https://repo1.maven.org/maven2/org/ow2/asm/asm-util/6.0/asm-util-6.0.jar",
+            "https://repo1.maven.org/maven2/org/ow2/asm/asm-util/7.0/asm-util-7.0.jar",
         ],
-        jar_sha256 = "356afebdb0f870175262e5188f8709a3b17aa2a5a6a4b0340b04d4b449bca5f6",
+        jar_sha256 = "75fbbca440ef463f41c2b0ab1a80abe67e910ac486da60a7863cbcb5bae7e145",
         exports = [
             "@org_ow2_asm_analysis",
             "@org_ow2_asm_tree",
