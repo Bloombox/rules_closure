@@ -754,9 +754,9 @@ def com_google_template_soy():
         name = "com_google_template_soy",
         licenses = ["notice"],  # Apache 2.0
         jar_urls = [
-            "https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b18.jar"
+            "https://storage.googleapis.com/bloom-software/frontend/soy/soy-lib-b19.jar"
         ],
-        jar_sha256 = "d168ce0289a6cf1b72134bc5e33b89ab92980c6978f7e50ded598efdf4a4402d",
+        jar_sha256 = "e75ade066465f708363eb5813234efbcc632dc524d6ddb9ff434a45a12c51877",
         deps = [
             "@args4j",
             "@com_google_code_findbugs_jsr305",
