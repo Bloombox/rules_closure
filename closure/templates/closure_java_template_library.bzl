@@ -64,10 +64,6 @@ def _impl(ctx):
     if len(soydeps) > 0:
         args += ["--depHeaders=%s" % ",".join(soydeps)]
 
-    jargs = [
-        "--output=%s" % jouts[0].path,
-        "--outputSrcJar=%s" % jouts[1].path]
-
     ctx.actions.run(
         inputs = inputs,
         outputs = [o for o in ctx.outputs.outputs if "SoyInfo.java" in o.path],
@@ -79,22 +75,28 @@ def _impl(ctx):
         ),
     )
 
-    ctx.actions.run(
-        inputs = inputs,
-        outputs = jouts,
-        executable = ctx.executable.javacompiler,
-        arguments = args + jargs,
-        mnemonic = "SoyJavaCompiler",
-        progress_message = "Generating %d SOY v2 Java source file(s)" % len(
-            jouts
-        ),
-    )
+    if ctx.attr.precompile:
+        jargs = [
+                "--output=%s" % jouts[0].path,
+                "--outputSrcJar=%s" % jouts[1].path]
+
+        ctx.actions.run(
+            inputs = inputs,
+            outputs = jouts,
+            executable = ctx.executable.javacompiler,
+            arguments = args + jargs,
+            mnemonic = "SoyJavaCompiler",
+            progress_message = "Generating %d SOY v2 Java source file(s)" % len(
+                jouts
+            ),
+        )
 
 _closure_java_template_library = rule(
     implementation = _impl,
     output_to_genfiles = True,
     attrs = {
         "java_package": attr.string(),
+        "precompile": attr.bool(),
         "srcs": attr.label_list(allow_files = SOY_FILE_TYPE),
         "deps": attr.label_list(
             aspects = [closure_js_aspect],
@@ -139,6 +141,7 @@ def closure_java_template_library(
         extra_srcs = [],
         extra_outs = [],
         root_directory = None,
+        precompile = False,
         infocompilerbin = str(Label(_SOY_INFO_COMPILER_BIN)),
         soycompilerbin = str(Label(_SOY_JAVA_COMPILER_BIN)),
         **kwargs):
@@ -153,13 +156,17 @@ def closure_java_template_library(
          "SoyInfo.java").replace("-", "")
         for fn in srcs
     ]
-    jouts = [
-        (_soy__dirname(fn) + _soy__camel(_soy__filename(fn)[:-4]) + ".jar").replace("-", "")
-        for fn in srcs
-    ] + [
-        (_soy__dirname(fn) + _soy__camel(_soy__filename(fn)[:-4]) + "_src.jar").replace("-", "")
-        for fn in srcs
-    ]
+
+    if precompile:
+        jouts = [
+            (_soy__dirname(fn) + _soy__camel(_soy__filename(fn)[:-4]) + ".jar").replace("-", "")
+            for fn in srcs
+        ] + [
+            (_soy__dirname(fn) + _soy__camel(_soy__filename(fn)[:-4]) + "_src.jar").replace("-", "")
+            for fn in srcs
+        ]
+    else:
+        jouts = []
 
     _closure_java_template_library(
         name = name + "_soy_java",
@@ -169,6 +176,7 @@ def closure_java_template_library(
         outputs = infoouts + jouts + extra_outs,
         infocompiler = infocompilerbin,
         javacompiler = soycompilerbin,
+        precompile = precompile,
     )
 
     java_protos = [proto.replace("-closure_proto", "") for proto in proto_deps]
@@ -197,21 +205,20 @@ def closure_java_template_library(
     )
 
     # Create an additional import for the precompiled template JAR.
-    native.java_import(
-        name = name + "_jcompiled",
-        jars = [jouts[0]],
-        srcjar = jouts[1],
-        exports = [
-            str(Label(_SOY_LIBRARY))] +  # export Soy library
-            java_protos,  # export java protos
-        deps = [
-            "@com_google_guava",
-            "@javax_annotation_jsr250_api",
-            str(Label(_SOY_LIBRARY)),
-        ] + java_protos,
-    )
-
-#    jouts +  # java pre-compiled templates
+    if precompile:
+        native.java_import(
+            name = name + "_jcompiled",
+            jars = [jouts[0]],
+            srcjar = jouts[1],
+            exports = [
+                str(Label(_SOY_LIBRARY))] +  # export Soy library
+                java_protos,  # export java protos
+            deps = [
+                "@com_google_guava",
+                "@javax_annotation_jsr250_api",
+                str(Label(_SOY_LIBRARY)),
+            ] + java_protos,
+        )
 
     if filegroup_name != None:
         # Create a filegroup with all the dependencies.
