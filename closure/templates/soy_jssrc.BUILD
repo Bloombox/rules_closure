@@ -19,7 +19,6 @@ licenses(["notice"])  # Apache 2.0
 filegroup(
     name = "com_google_template_soy_jssrc",
     srcs = [
-        "tslib.js",
         "checks.js",
         "global.js",
         "jspbconversions.js",
