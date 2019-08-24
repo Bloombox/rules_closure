@@ -19,6 +19,7 @@ licenses(["notice"])  # Apache 2.0
 filegroup(
     name = "com_google_template_soy_jssrc",
     srcs = [
+        "tslib.js",
         "checks.js",
         "global.js",
         "jspbconversions.js",
@@ -37,5 +38,7 @@ filegroup(
         "api_idom.js",
         "element_lib_idom.js",
         "soyutils_idom.js",
+        "shim.js",
+        "skiphandler.js",
     ],
 )

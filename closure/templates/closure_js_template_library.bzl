@@ -162,6 +162,7 @@ def closure_js_template_library(
         str(Label("//closure/library/i18n:bidiformatter")),
         str(Label("//closure/library/i18n:numberformat")),
         str(Label("//closure/library/object")),
+        str(Label("//closure/library/soy:soy")),
         str(Label("//closure/library/soy:all_js")),
         str(Label("//closure/library/string")),
         str(Label("//closure/library/string:const")),
