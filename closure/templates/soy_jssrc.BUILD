@@ -37,7 +37,5 @@ filegroup(
         "api_idom.js",
         "element_lib_idom.js",
         "soyutils_idom.js",
-        "shim.js",
-        "skiphandler.js",
     ],
 )
