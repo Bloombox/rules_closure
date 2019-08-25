@@ -1,11 +1,15 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//closure:defs.bzl", "closure_js_library")
+load("@io_bloombox_labs_NEURON//defs:closure.bzl",
+     "closure_js_library",
+     "closure_ts_library")
 
 suppressions = [
-    "JSC_REQUIRES_NOT_SORTED",
     "JSC_UNKNOWN_EXPR_TYPE",
+    "jsdocMissingType",
+    "extraRequire",
+    "unusedLocalVariables",
     "JSC_IMPLICITLY_NULLABLE_JSDOC"]
 
 
@@ -18,16 +22,21 @@ filegroup(
 ## Files: Closure Dist
 closure_js_library(
     name = "idom-types-js",
-    srcs = ["dist/closure/types.js"],
-    suppress = ["JSC_USELESS_EMPTY_STATEMENT", "JSC_IMPLICITLY_NULLABLE_JSDOC"])
+    srcs = ["dist/closure/release/types.js"],
+    suppress = ["JSC_IMPLICITLY_NULLABLE_JSDOC"])
+
+closure_js_library(
+    name = "idom-debug-js",
+    srcs = ["dist/closure/release/debug.js"])
 
 closure_js_library(
     name = "idom-global-js",
-    srcs = ["dist/closure/global.js"])
+    srcs = ["dist/closure/release/global.js"],
+    deps = [":idom-debug-js"])
 
 closure_js_library(
     name = "idom-assertions-js",
-    srcs = ["dist/closure/assertions.js"],
+    srcs = ["dist/closure/release/assertions.js"],
     deps = [
         ":idom-global-js",
         ":idom-types-js"],
@@ -35,48 +44,52 @@ closure_js_library(
 
 closure_js_library(
     name = "idom-symbols-js",
-    srcs = ["dist/closure/symbols.js"])
+    srcs = ["dist/closure/release/symbols.js"])
 
 closure_js_library(
     name = "idom-util-js",
-    srcs = ["dist/closure/util.js"],
-    suppress = ["JSC_UNKNOWN_EXPR_TYPE"])
+    srcs = ["dist/closure/release/util.js"],
+    suppress = ["JSC_UNKNOWN_EXPR_TYPE"] + suppressions)
 
 closure_js_library(
     name = "idom-attributes-js",
-    srcs = ["dist/closure/attributes.js"],
+    srcs = ["dist/closure/release/attributes.js"],
     deps = [
         ":idom-types-js",
+        ":idom-assertions-js",
         ":idom-symbols-js",
         ":idom-util-js"],
     suppress = suppressions)
 
 closure_js_library(
     name = "idom-changes-js",
-    srcs = ["dist/closure/changes.js"],
+    srcs = ["dist/closure/release/changes.js"],
     deps = [":idom-util-js"],
     suppress = suppressions)
 
 closure_js_library(
     name = "idom-notifications-js",
-    srcs = ["dist/closure/notifications.js"])
+    srcs = ["dist/closure/release/notifications.js"])
 
 closure_js_library(
     name = "idom-context-js",
-    srcs = ["dist/closure/context.js"],
+    srcs = ["dist/closure/release/context.js"],
     deps = [":idom-notifications-js"],
-    suppress = suppressions)
+    suppress = [
+        "JSC_UNKNOWN_EXPR_TYPE",
+        "JSC_IMPLICITLY_NULLABLE_JSDOC"])
 
 closure_js_library(
     name = "idom-dom_util-js",
-    srcs = ["dist/closure/dom_util.js"],
-    deps = [":idom-notifications-js"],
-    suppress = ["JSC_UNKNOWN_EXPR_TYPE"])
+    srcs = ["dist/closure/release/dom_util.js"],
+    deps = [":idom-notifications-js", ":idom-assertions-js"],
+    suppress = ["JSC_UNKNOWN_EXPR_TYPE"] + suppressions)
 
 closure_js_library(
     name = "idom-node_data-js",
-    srcs = ["dist/closure/node_data.js"],
+    srcs = ["dist/closure/release/node_data.js"],
     deps = [
+        ":idom-util-js",
         ":idom-assertions-js",
         ":idom-dom_util-js",
         ":idom-global-js",
@@ -85,7 +98,7 @@ closure_js_library(
 
 closure_js_library(
     name = "idom-nodes-js",
-    srcs = ["dist/closure/nodes.js"],
+    srcs = ["dist/closure/release/nodes.js"],
     deps = [
         ":idom-node_data-js",
         ":idom-types-js"],
@@ -93,7 +106,7 @@ closure_js_library(
 
 closure_js_library(
     name = "idom-core-js",
-    srcs = ["dist/closure/core.js"],
+    srcs = ["dist/closure/release/core.js"],
     deps = [
         ":idom-assertions-js",
         ":idom-context-js",
@@ -102,18 +115,19 @@ closure_js_library(
         ":idom-node_data-js",
         ":idom-nodes-js",
         ":idom-types-js"],
-    suppress = suppressions)
+    suppress = suppressions + ["JSC_OPTIONAL_PARAM_NOT_MARKED_OPTIONAL"])
 
 closure_js_library(
     name = "idom-diff-js",
-    srcs = ["dist/closure/diff.js"],
+    srcs = ["dist/closure/release/diff.js"],
     deps = [
+        ":idom-changes-js",
         ":idom-util-js"],
     suppress = suppressions)
 
 closure_js_library(
     name = "idom-virtual_elements-js",
-    srcs = ["dist/closure/virtual_elements.js"],
+    srcs = ["dist/closure/release/virtual_elements.js"],
     deps = [
         ":idom-assertions-js",
         ":idom-attributes-js",
@@ -121,8 +135,9 @@ closure_js_library(
         ":idom-global-js",
         ":idom-node_data-js",
         ":idom-types-js",
+        ":idom-diff-js",
         ":idom-util-js"],
-    suppress = suppressions + ["JSC_WRONG_NUMBER_OF_PARAMS"])
+    suppress = suppressions)
 
 closure_js_library(
     name = "idom-index-js",
@@ -134,7 +149,8 @@ closure_js_library(
         ":idom-node_data-js",
         ":idom-notifications-js",
         ":idom-symbols-js",
-        ":idom-virtual_elements-js"])
+        ":idom-virtual_elements-js"],
+    suppress = suppressions)
 
 closure_js_library(
     name = "idom-js",

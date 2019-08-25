@@ -25,6 +25,10 @@ _SOYTOINCREMENTALDOMSRCCOMPILER = "@com_google_template_soy//:SoyToIncrementalDo
 
 
 def _impl(ctx):
+    # fail if we get more than one dep (should be an abstract target)
+#    if len(ctx.attr.deps) > 1:
+#        fail("Provide maximum of 1 dependency to closure_js_template_library: an abstract template target.")
+
     if not ctx.attr.incremental_dom:
         args = ["--outputPathFormat=%s/{INPUT_DIRECTORY}/{INPUT_FILE_NAME}.js" %
                 ctx.configuration.genfiles_dir.path]
@@ -48,6 +52,7 @@ def _impl(ctx):
         if not arg.startswith("--") or (" " in arg and "=" not in arg):
             fail("Please use --flag=value syntax for defs")
         args += [arg]
+
     inputs = []
     for f in ctx.files.srcs:
         args.append("--srcs=" + f.path)
@@ -56,12 +61,15 @@ def _impl(ctx):
         args += ["--compileTimeGlobalsFile", ctx.file.globals.path]
         inputs.append(ctx.file.globals)
 
+    protodeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
         dep_descriptors = getattr(dep.closure_js_library, "descriptors", None)
         if dep_descriptors:
             for f in dep_descriptors.to_list():
-                args += ["--protoFileDescriptors=%s" % f.path]
-                inputs.append(f)
+                if f not in protodeps:
+                    protodeps.append(f)
+                    args += ["--protoFileDescriptors=%s" % f.path]
+                    inputs.append(f)
 
     soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_tpl_library"):

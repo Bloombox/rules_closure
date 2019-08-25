@@ -695,9 +695,9 @@ def com_google_javascript_incremental_dom():
     # https://github.com/google/incremental-dom/blob/master/gulpfile.js
     http_archive(
         name = "com_google_javascript_incremental_dom",
-        url = "https://github.com/bloombox/incremental-dom/archive/8866a9e57a216eaa6f3dac94240f437a573842ab.tar.gz",
-        strip_prefix = "incremental-dom-8866a9e57a216eaa6f3dac94240f437a573842ab",
-        sha256 = "82c041a1a81368b6cac5ebab3cde4da212364674b2d74d4cb0931f7068f7636e",
+        url = "https://github.com/bloombox/incremental-dom/archive/0966c11b1049d06c9c307254144d5226626937c2.tar.gz",
+        strip_prefix = "incremental-dom-0966c11b1049d06c9c307254144d5226626937c2",
+        sha256 = None,
         build_file = str(Label("//closure/templates:idom.bzl")),
     )
 

@@ -45,12 +45,15 @@ def _impl(ctx):
         args.append("--srcs=" + f.path)
         inputs.append(f)
 
+    protodeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
         dep_descriptors = getattr(dep.closure_js_library, "descriptors", None)
         if dep_descriptors:
             for f in dep_descriptors.to_list():
-                args += ["--protoFileDescriptors=%s" % f.path]
-                inputs.append(f)
+                if f not in protodeps:
+                    protodeps.append(f)
+                    args += ["--protoFileDescriptors=%s" % f.path]
+                    inputs.append(f)
 
     soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_tpl_library"):

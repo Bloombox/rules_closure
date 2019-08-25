@@ -165,10 +165,15 @@ def collect_template_headers(targets):
     srcs = []
     labels = []
     for target in targets:
-        if hasattr(target.closure_tpl_library, "srcs"):
-            srcs.append(getattr(target.closure_tpl_library, "srcs"))
-        if hasattr(target.closure_tpl_library, "labels"):
-            labels.append(getattr(target.closure_tpl_library, "labels"))
+        print("")
+        print("!!! Collecting template targets: " + str(target))
+        print("")
+
+        if hasattr(target, "closure_tpl_library"):
+            if hasattr(target.closure_tpl_library, "srcs"):
+                srcs.append(getattr(target.closure_tpl_library, "srcs"))
+            if hasattr(target.closure_tpl_library, "labels"):
+                labels.append(getattr(target.closure_tpl_library, "labels"))
     return struct(
         srcs = depset(transitive = srcs),
         labels = depset(transitive = labels),
