@@ -189,6 +189,7 @@ def closure_js_template_library(
         base_suppressions.append("superfluousSuppress")
         base_suppressions.append("strictModuleChecks")
         base_suppressions.append("extraRequire")
+        base_suppressions.append("missingProperties")
 
     closure_js_library(
         name = name,
@@ -200,6 +201,7 @@ def closure_js_template_library(
             "reportUnknownTypes",
             "strictCheckTypes",
             "unusedLocalVariables",
+            "undefinedNames"
         ],
         internal_templates = srcs,
         **kwargs

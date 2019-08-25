@@ -79,7 +79,9 @@ def _template_impl(ctx):
         closure_js_library = library.closure_js_library,
         closure_tpl_library = struct(
             srcs = ctx.files.srcs,
-            soy_headers = ctx.outputs.outputs,
+            outputs = ctx.outputs.outputs,
+            protos = protodeps,
+            headers = hdeps,
         )
     )
 

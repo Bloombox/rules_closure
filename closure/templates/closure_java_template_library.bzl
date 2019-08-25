@@ -57,11 +57,19 @@ def _impl(ctx):
 
     soydeps = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_tpl_library"):
-        dep_templates = getattr(dep.closure_js_library, "outputs", None)
+        dep_templates = getattr(dep.closure_tpl_library, "outputs", None)
         if dep_templates:
-            for f in dep_templates.to_list():
-                soydeps.append(f.path)
-                inputs.append(f)
+            for f in dep_templates:
+                if f.path not in soydeps:
+                    soydeps.append(f.path)
+                    inputs.append(f)
+
+        transitive_protodeps = getattr(dep.closure_tpl_library, "protos", None)
+        if transitive_protodeps:
+            for t in transitive_protodeps:
+                if f not in protodeps:
+                    protodeps.append(f.path)
+                    inputs.append(f)
 
     ## prep dependencies for the template, if we have any
     if len(soydeps) > 0:
