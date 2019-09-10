@@ -1,9 +1,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("@io_bloombox_labs_NEURON//defs:closure.bzl",
-     "closure_js_library",
-     "closure_ts_library")
+load("//closure/compiler",
+     "closure_js_library")
 
 suppressions = [
     "JSC_UNKNOWN_EXPR_TYPE",
