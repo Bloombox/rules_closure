@@ -2,13 +2,11 @@ workspace(name = "io_bazel_rules_closure")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//closure/private:java_import_external.bzl", "java_import_external")
-load("//closure:repositories.bzl", "closure_repositories")
 
-closure_repositories()
+load("@io_bazel_rules_closure//closure:repositories.bzl", "rules_closure_dependencies", "rules_closure_toolchains")
+rules_closure_dependencies()
+rules_closure_toolchains()
 
-load("//closure:toolchains.bzl", "closure_register_toolchains")
-
-closure_register_toolchains()
 
 java_import_external(
     name = "com_google_guava_testlib",
