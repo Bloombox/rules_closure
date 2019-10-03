@@ -198,6 +198,7 @@ def closure_js_template_library(
         testonly = testonly,
         suppress = base_suppressions + suppress + [
             "analyzerChecks",
+            "deprecated",
             "reportUnknownTypes",
             "strictCheckTypes",
             "unusedLocalVariables",
