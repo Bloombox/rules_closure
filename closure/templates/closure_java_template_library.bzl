@@ -15,6 +15,7 @@
 """Utilities for compiling Closure Templates to Java.
 """
 
+load("@rules_java//java:defs.bzl", "java_library")
 load("//closure/compiler:closure_js_aspect.bzl", "closure_js_aspect")
 load("//closure/compiler:closure_js_library.bzl", "closure_js_library")
 load("//closure/templates:closure_template_library.bzl", "closure_template_library")
@@ -199,7 +200,7 @@ def closure_java_template_library(
 
     # Now, wrap them in a Java library, and expose the Soy files as resources.
     java_srcs = infoouts + extra_outs
-    native.java_library(
+    java_library(
         name = name,
         srcs = java_srcs or None,
         exports = [
