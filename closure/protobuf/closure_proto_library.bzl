@@ -18,90 +18,110 @@
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("//closure/compiler:closure_js_library.bzl", "create_closure_js_library")
 load("//closure/private:defs.bzl", "CLOSURE_JS_TOOLCHAIN_ATTRS", "unfurl")
-load("@build_bazel_rules_proto//proto:proto_common.bzl", "proto_common")
 
-def _closure_proto_output_name(src):
-    # src is of format <path/to/file>.proto
-    return ["{}.js".format(src[:-6])]
+# This was borrowed from Rules Go, licensed under Apache 2.
+# https://github.com/bazelbuild/rules_go/blob/67f44035d84a352cffb9465159e199066ecb814c/proto/compiler.bzl#L72
+def _proto_path(proto):
+    path = proto.path
+    root = proto.root.path
+    ws = proto.owner.workspace_root
+    if path.startswith(root):
+        path = path[len(root):]
+    if path.startswith("/"):
+        path = path[1:]
+    if path.startswith(ws):
+        path = path[len(ws):]
+    if path.startswith("/"):
+        path = path[1:]
+    return path
 
-def _closure_proto_options(params):
-    options = []
+def _proto_include_path(proto):
+    path = proto.path[:-len(_proto_path(proto))]
+    if not path:
+        return "."
+    if path.endswith("/"):
+        path = path[:-1]
+    return path
 
-    # The framework in rules_protobuf requires that we generate one output
-    # file for every input file.
-    options.append("one_output_file_per_input_file")
+def _proto_include_paths(protos):
+    return depset([_proto_include_path(proto) for proto in protos.to_list()])
 
-    # Only `import_style=closure` is supported for now.
-    # See https://github.com/grpc/grpc-web/pull/260#issuecomment-415443448
-    options.append("import_style=closure")
+def _generate_closure_js_progress_message(name):
+    # TODO(yannic): Add a better message?
+    return "Generating JavaScript Protocol Buffer %s" % name
 
-    # Enums are allways |goog.require()|'d in the generated files to avoid
-    # namespace-not-provided if no library |goog.require()|'s them.
-    options.append("add_require_for_enums")
+def _generate_closure_js(target, ctx):
+    # Support only `import_style=closure`, and always add
+    # |goog.require()| for enums.
+    js_out_options = [
+        "import_style=closure",
+        "library=%s" % ctx.label.name,
+        "add_require_for_enums",
+    ]
+    if getattr(ctx.rule.attr, "testonly", False):
+        js_out_options.append("testonly")
+    js = ctx.actions.declare_file("%s.js" % ctx.label.name)
 
-    # If the proto_library is marked as testonly, tell protoc to add
-    # |goog.setTestOnly()| to the generated code.
-    if params.testonly:
-        options.append("testonly")
+    # Add include paths for all proto files,
+    # to avoid copying/linking the files for every target.
+    protos = target[ProtoInfo].transitive_imports
+    args = ["-I%s" % p for p in _proto_include_paths(protos).to_list()]
 
-    return ",".join(options)
+    out_options = ",".join(js_out_options)
+    out_path = "/".join(js.path.split("/")[:-1])
+    args += ["--js_out=%s:%s" % (out_options, out_path)]
 
-def _closure_proto_aspect_impl(target, ctx):
-    srcs = proto_common.lang_proto_aspect_impl(
-        actions = ctx.actions,
-        toolchain = ctx.toolchains[proto_common.TOOLCHAIN_TYPE],
-        flavor = "Closure",
-        get_generator_options = _closure_proto_options,
-        get_generator_options_params = struct(
-            testonly = getattr(ctx.rule.attr, "testonly", False),
-        ),
-        get_output_files = _closure_proto_output_name,
-        language = "js",
-        target = target,
+    # Add paths of protos we generate files for.
+    args += [file.path for file in target[ProtoInfo].direct_sources]
+
+    ctx.actions.run(
+        inputs = protos,
+        outputs = [js],
+        executable = ctx.executable._protoc,
+        arguments = args,
+        progress_message =
+            _generate_closure_js_progress_message(ctx.rule.attr.name),
     )
 
+    return js
+
+def _closure_proto_aspect_impl(target, ctx):
+    js = _generate_closure_js(target, ctx)
+
+    srcs = depset([js])
     deps = unfurl(ctx.rule.attr.deps, provider = "closure_js_library")
-    deps += [ctx.attr._closure_protobuf_runtime]
+    deps += [ctx.attr._closure_library, ctx.attr._closure_protobuf_jspb]
 
     suppress = [
         "missingProperties",
         "unusedLocalVariables",
     ]
 
-    protoinfo = getattr(target, "proto", None)
-    if protoinfo == None:
-        fail("No protoinfo for target: %s" % target)
-
-    direct_descriptor = getattr(protoinfo, "direct_descriptor_set", None)
-    if direct_descriptor == None:
-        fail("No direct descriptor for target: %s" % target)
-
-    transitive_descriptor_sets = getattr(protoinfo, "transitive_descriptor_sets", None)
-    if transitive_descriptor_sets == None:
-        transitive_descriptor_sets = []
-
-    library = create_closure_js_library(
-        ctx, srcs, deps, [], suppress, True,
-        _proto_target=direct_descriptor,
-        _transitive_proto_targets=transitive_descriptor_sets)
-
+    library = create_closure_js_library(ctx, srcs, deps, [], suppress, True)
     return struct(
         exports = library.exports,
         closure_js_library = library.closure_js_library,
+        # The usual suspects are exported as runfiles, in addition to raw source.
+        runfiles = ctx.runfiles(files = [js]),
     )
 
-closure_proto_aspect = proto_common.lang_proto_aspect(
+closure_proto_aspect = aspect(
+    attr_aspects = ["deps"],
     attrs = dict({
         # internal only
-        "_closure_protobuf_runtime": attr.label(
-            default = Label("//closure/protobuf:runtime"),
+        "_protoc": attr.label(
+            default = Label("@com_google_protobuf//:protoc"),
+            executable = True,
+            cfg = "host",
+        ),
+        "_closure_library": attr.label(
+            default = Label("//closure/library/array"),
+        ),
+        "_closure_protobuf_jspb": attr.label(
+            default = Label("//closure/protobuf:jspb"),
         ),
     }, **CLOSURE_JS_TOOLCHAIN_ATTRS),
     implementation = _closure_proto_aspect_impl,
-    provides = [
-        "closure_js_library",
-        "exports",
-    ],
 )
 
 _error_multiple_deps = "".join([
