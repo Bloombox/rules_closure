@@ -712,19 +712,6 @@ def com_google_javascript_closure_compiler():
         ]),
     )
 
-def com_google_javascript_incremental_dom():
-    # To update Incremental DOM, one needs to update
-    # third_party/javascript/incremental_dom/build.sh to remain compatible with
-    # the upstream "js-closure" gulpfile.js target.
-    # https://github.com/google/incremental-dom/blob/master/gulpfile.js
-    http_archive(
-        name = "com_google_javascript_incremental_dom",
-        url = "https://github.com/bloombox/incremental-dom/archive/0966c11b1049d06c9c307254144d5226626937c2.tar.gz",
-        strip_prefix = "incremental-dom-0966c11b1049d06c9c307254144d5226626937c2",
-        sha256 = None,
-        build_file = str(Label("//closure/templates:idom.bzl")),
-    )
-
 def com_google_javascript_closure_library():
     # After updating: bazel run //closure/library:regenerate -- "$PWD"
     http_archive(
@@ -736,6 +723,19 @@ def com_google_javascript_closure_library():
         sha256 = "8e8a57146510d27f63f750533d274a5d7654df155491629d6585233a631f5590",
         strip_prefix = "closure-library-20190729",
         build_file = str(Label("//closure/library:closure_library.BUILD")),
+    )
+
+def com_google_javascript_incremental_dom():
+    # To update Incremental DOM, one needs to update
+    # third_party/javascript/incremental_dom/build.sh to remain compatible with
+    # the upstream "js-closure" gulpfile.js target.
+    # https://github.com/google/incremental-dom/blob/master/gulpfile.js
+    http_archive(
+        name = "com_google_javascript_incremental_dom",
+        url = "https://github.com/bloombox/incremental-dom/archive/0966c11b1049d06c9c307254144d5226626937c2.tar.gz",
+        strip_prefix = "incremental-dom-0966c11b1049d06c9c307254144d5226626937c2",
+        sha256 = "0a8e77f1a3f6d263dba6f6180768ccf336464639f644ccc8418dd93cdd0e2241",
+        build_file = str(Label("//closure/templates:idom.bzl")),
     )
 
 def com_google_jsinterop_annotations():

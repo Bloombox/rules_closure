@@ -1,8 +1,7 @@
 
-package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_closure//closure:defs.bzl", "closure_js_library")
 
-load("//closure/compiler",
-     "closure_js_library")
+package(default_visibility = ["//visibility:public"])
 
 suppressions = [
     "JSC_UNKNOWN_EXPR_TYPE",
