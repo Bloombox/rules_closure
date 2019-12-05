@@ -29,19 +29,24 @@ def _template_impl(ctx):
         inputs.append(f)
     hdeps = []
     protodeps = []
+    protos = []
     for dep in unfurl(ctx.attr.deps, provider = "closure_js_library"):
         tpl_descriptors = getattr(dep.closure_js_library, "descriptors", None)
         if tpl_descriptors:
             for f in tpl_descriptors.to_list():
-                args += ["--protoFileDescriptors=%s" % f.path]
-                inputs.append(f)
-                protodeps.append(dep)
+                if f.path not in protos:
+                    protos.append(f.path)
+                    args += ["--protoFileDescriptors=%s" % f.path]
+                    inputs.append(f)
+                    protodeps.append(dep)
         transitive_descriptors = getattr(dep.closure_js_library, "transitive_descriptors", None)
         if transitive_descriptors:
             for f in transitive_descriptors.to_list():
-                args += ["--protoFileDescriptors=%s" % f.path]
-                inputs.append(f)
-                protodeps.append(dep)
+                if f.path not in protos:
+                    protos.append(f.path)
+                    args += ["--protoFileDescriptors=%s" % f.path]
+                    inputs.append(f)
+                    protodeps.append(dep)
 
         tpl_headers = getattr(dep.closure_js_library, "template_headers", None)
         if tpl_headers:
